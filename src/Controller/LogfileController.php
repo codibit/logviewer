@@ -105,6 +105,15 @@ class LogfileController extends AbstractController
 
 
 
-        die();
+    }
+
+    #[Route('/logfile/epadata.json', name: 'jsonfile')]
+    public function jsonfile($filepath = false): Response
+    {
+        $filepath =  '/doc/3.1 Candidate Assignment - Public Folder/epa-http.json';
+        return new Response(file_get_contents($this->getParameter('kernel.project_dir') . $filepath),
+            Response::HTTP_OK,
+            ['content-type' => 'application/json']);
+
     }
 }
