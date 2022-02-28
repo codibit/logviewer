@@ -22,17 +22,20 @@ class LogfileController extends AbstractController
     public function process(logfileProcessor $logfileProcessor): Response
     {
 
-        $logfileProcessor->process();
+        try{
+            $logfileProcessor->process();
+        } catch (Exception $e){
+            echo 'Sorry, the following error happened while processing the file: ',  $e->getMessage(), "\n";
+        }
 
-        return $this->render('logfile/processed.html.twig', [
-            'controller_name' => 'LogfileController',
-        ]);
+        return $this->render('logfile/processed.html.twig');
     }
 
     #[Route('/logfile/epadata.json', name: 'jsonfile')]
     public function jsonfile($filepath = false): Response
     {
         $filepath =  '/doc/3.1 Candidate Assignment - Public Folder/epa-http.json';
+
         return new Response(file_get_contents($this->getParameter('kernel.project_dir') . $filepath),
             Response::HTTP_OK,
             ['content-type' => 'application/json']);

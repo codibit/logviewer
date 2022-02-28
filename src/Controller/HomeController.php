@@ -104,12 +104,22 @@ class HomeController extends AbstractController
                     'label' => 'Requests in a minute',
                     'backgroundColor' => 'rgb(255, 99, 132)',
                     'borderColor' => 'rgb(255, 99, 132)',
+                    'borderWidth' => 1,
+                    'radius' => 0,
                     'data' => $chart2_data,
                 ],
             ],
         ]);
 
-        $chart2->setOptions([
+        $chart2->setOptions([/*
+            'scales'=>[
+                'xAxes'=>[
+                    'type'=>'time',
+                    'time'=>[
+                        'displayFormats'
+                    ]
+                ]
+            ],*/
             'elements' =>[
                 'point' =>[
                     'radius' => 0
@@ -123,7 +133,7 @@ class HomeController extends AbstractController
             'datasets' => [
                 [
                     'label' => 'Methods',
-                    'backgroundColor' => [ 'rgb(30, 200, 30)', 'rgb(255, 205, 86)','rgb(255, 205, 150)', 'rgb(255, 40, 40)' , 'rgb(54, 162, 235)', 'rgb(140, 99, 132)',  'rgb(255, 80, 80)' ,  'rgb(255, 120, 120)' ],
+                    'backgroundColor' => [ 'rgb(30, 200, 30)', 'rgb(40, 150, 40)', 'rgb(40, 100, 40)', 'rgb(255, 40, 40)' ,    'rgb(255, 80, 80)' ,  'rgb(255, 120, 120)', 'rgb(255, 150, 150)','rgb(255, 180, 180)' ],
                     // 'backgroundColor' => 'rgb(255, 99, 132)',
                     //'borderColor' => 'rgb(255, 99, 132)',
                     'data' => $chart3_values //[0, 10, 5, 2, 20, 30, 45],
@@ -131,7 +141,13 @@ class HomeController extends AbstractController
             ],
         ]);
 
-        $chart3->setOptions([/* ... */]);
+        $chart3->setOptions([/*
+            'plugins'=>[
+                'legend'=>[
+                    'position'=>'left',
+                ]
+            ]
+        */]);
 
         $chart4 = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chart4->setData([
