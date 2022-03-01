@@ -2,7 +2,6 @@
 namespace Deployer;
 
 require 'recipe/symfony.php';
-require 'contrib/yarn.php';
 
 // Config
 
@@ -24,9 +23,11 @@ task('build', function () {
     cd('{{release_path}}');
     run('npm run build');
 });
-task('yarn:build', function () {
+
+task('yarn-encore', function () {
     cd('{{release_path}}');
-    run('npm run build');
+    run('./node_modules/.bin/encore production');
 });
 
 after('deploy:failed', 'deploy:unlock');
+after('deploy:vendors', 'yarn-encore');
