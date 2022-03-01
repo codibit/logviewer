@@ -3,6 +3,25 @@
 {% block title %}Statistics!{% endblock %}
 
 {% block body %}
+    <script type="text/javascript">
+        let width, height, gradient;
+        function getGradient(ctx, chartArea) {
+            const chartWidth = chartArea.right - chartArea.left;
+            const chartHeight = chartArea.bottom - chartArea.top;
+            if (!gradient || width !== chartWidth || height !== chartHeight) {
+                // Create the gradient because this is either the first render
+                // or the size of the chart has changed
+                width = chartWidth;
+                height = chartHeight;
+                gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                gradient.addColorStop(0, Utils.CHART_COLORS.blue);
+                gradient.addColorStop(0.5, Utils.CHART_COLORS.yellow);
+                gradient.addColorStop(1, Utils.CHART_COLORS.red);
+            }
+
+            return gradient;
+        }
+    </script>
 <div class="container-fluid">
 
     <div class="page-header">
@@ -25,7 +44,7 @@
             <div class="card">
                 <div class="card-header"><h4 class="card-title">Requests pro Minute</h4></div>
                 <div class="card-body chart-container">
-                    {{ render_chart(chart2, {'class': 'requests'}) }}
+                    {{ render_chart(chart2, {'class': 'requests', 'data-controller': 'logviewerCharts'}) }}
                 </div>
             </div>
         </div>

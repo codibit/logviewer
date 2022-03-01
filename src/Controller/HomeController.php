@@ -20,7 +20,7 @@ class HomeController extends AbstractController
             $chart4_data[$i*100] = 0;
         }
         foreach ($data as $logline){
-            $datetime = '1995-08-'.$logline->datetime->day.' '.$logline->datetime->hour.':'.$logline->datetime->minute;
+            $datetime = /*''.$logline->datetime->day.' '.*/$logline->datetime->hour.':'.$logline->datetime->minute;
             if(!isset($chart2_data[$datetime])){
                 $chart2_data[$datetime] = 0;
             }
@@ -89,7 +89,7 @@ class HomeController extends AbstractController
         $chart1->setOptions([]);
 
         foreach ($data as $logline){
-            $datetime = '1995-08-'.$logline->datetime->day.' '.$logline->datetime->hour.':'.$logline->datetime->minute;
+            $datetime = /*'1995-08-'.$logline->datetime->day.' '.*/$logline->datetime->hour.':'.$logline->datetime->minute;
             if(!isset($chart2_data[$datetime])){
                 $chart2_data[$datetime] = 0;
             }
@@ -103,7 +103,16 @@ class HomeController extends AbstractController
                 [
                     'label' => 'Requests in a minute',
                     'backgroundColor' => 'rgb(255, 99, 132)',
-                    'borderColor' => 'rgb(255, 99, 132)',
+                 /*   'borderColor' => 'function(context) {
+                                        const chart = context.chart;
+                                        const {ctx, chartArea} = chart;
+
+                                        if (!chartArea) {
+                                            // This case happens on initial chart load
+                                            return;
+                                        }
+                        return getGradient(ctx, chartArea);
+                     },',//'rgb(255, 99, 132)',*/
                     'borderWidth' => 1,
                     'radius' => 0,
                     'data' => $chart2_data,
@@ -111,15 +120,16 @@ class HomeController extends AbstractController
             ],
         ]);
 
-        $chart2->setOptions([/*
+        $chart2->setOptions([
             'scales'=>[
-                'xAxes'=>[
-                    'type'=>'time',
-                    'time'=>[
-                        'displayFormats'
-                    ]
+                'x'=>[
+                    'ticks'=>[
+                        'maxTicksLimit' => 24,
+                        'maxRotation' => 50,
+                        //'includeBounds' => True
+                    ],
                 ]
-            ],*/
+            ],
             'elements' =>[
                 'point' =>[
                     'radius' => 0
@@ -127,12 +137,12 @@ class HomeController extends AbstractController
             ]
         ]);
 
-        $chart3 = $chartBuilder->createChart(Chart::TYPE_PIE);
+        $chart3 = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chart3->setData([
             'labels' => $chart3_labels, //['January', 'February', 'March', 'April', 'May', 'June', 'July'],
             'datasets' => [
                 [
-                    'label' => 'Methods',
+                    'label' => 'Response Codes',
                     'backgroundColor' => [ 'rgb(30, 200, 30)', 'rgb(40, 150, 40)', 'rgb(40, 100, 40)', 'rgb(255, 40, 40)' ,    'rgb(255, 80, 80)' ,  'rgb(255, 120, 120)', 'rgb(255, 150, 150)','rgb(255, 180, 180)' ],
                     // 'backgroundColor' => 'rgb(255, 99, 132)',
                     //'borderColor' => 'rgb(255, 99, 132)',
