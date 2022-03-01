@@ -29,6 +29,8 @@ task('encore', function(){
     run('yarn build');
 });
 
+before('deploy:success', 'database:migrate');
+
 after('deploy:symlink', 'encore');
 
 after('deploy:failed', 'deploy:unlock');
