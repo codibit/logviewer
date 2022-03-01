@@ -2,6 +2,7 @@
 namespace Deployer;
 
 require 'recipe/symfony.php';
+require 'contrib/yarn.php';
 
 // Config
 
@@ -20,6 +21,10 @@ host('linode1.vanherpt.net')
 // Tasks
 
 task('build', function () {
+    cd('{{release_path}}');
+    run('npm run build');
+});
+task('yarn:build', function () {
     cd('{{release_path}}');
     run('npm run build');
 });
