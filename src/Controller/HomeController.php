@@ -20,6 +20,7 @@ class HomeController extends AbstractController
             $chart4_data[$i*100] = 0;
         }
         foreach ($data as $logline){
+
             $datetime = /*''.$logline->datetime->day.' '.*/$logline->datetime->hour.':'.$logline->datetime->minute;
             if(!isset($chart2_data[$datetime])){
                 $chart2_data[$datetime] = 0;
@@ -57,37 +58,44 @@ class HomeController extends AbstractController
 
         }
 
-
-        //print_r($chart1_data);
         foreach($chart1_data as $label => $value){
             $chart1_labels[] = $label .' ('. ( round(($value/count($data)*100),2)). '%)';
             $chart1_values[] = $value;
         }
 
         foreach($chart3_data as $label => $value){
-           // $chart3_labels[] = $label;
             $chart3_labels[] = $label .' ('. ( round(($value/count($data)*100),2)). '%)';
             $chart3_values[] = $value;
         }
+
         foreach($chart4_data as $label => $value){
             $chart4_labels[] = $label . '-' .$label+100;
             $chart4_values[] = $value;
         }
+
+        /* SETUP 1ST CHART (HTTP Methoden) */
         $chart1 = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chart1->setData([
-            'labels' => $chart1_labels, //['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            'labels' => $chart1_labels,
             'datasets' => [
                 [
                     'label' => 'Methods',
                     'backgroundColor' => ['rgb(255, 205, 86)', 'rgb(54, 162, 235)', 'rgb(140, 99, 132)', 'rgb(255, 40, 40)' ],
-                    //'borderColor' => 'rgb(255, 99, 132)',
-                    'data' => $chart1_values, //[0, 10, 5, 2, 20, 30, 45], // ['One' => 0,'Two' => 10,'Three' => 5,'Four' => 2,'Five' => 20,'Six' => 30,'Seven' => 45], //$chart1_data //['1995-08-30 22:00' => 10,  '1995-08-30 22:01' =>5,  '1995-08-30 22:02' => 20,  '1995-08-30 22:03' => 22] //$chart1_data //$chart1_data,
+                    'data' => $chart1_values,
                 ],
             ],
         ]);
 
-        $chart1->setOptions([]);
+        $chart1->setOptions([
+            'plugins'=>[
+                'legend'=>[
+                    'display' => false
+                ],
+            ]
+        ]);
 
+
+        /* SETUP 2ND CHART (Requests pro Minute) */
         foreach ($data as $logline){
             $datetime = /*'1995-08-'.$logline->datetime->day.' '.*/$logline->datetime->hour.':'.$logline->datetime->minute;
             if(!isset($chart2_data[$datetime])){
@@ -98,21 +106,10 @@ class HomeController extends AbstractController
 
         $chart2 = $chartBuilder->createChart(Chart::TYPE_LINE);
         $chart2->setData([
-            //'labels' => ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
             'datasets' => [
                 [
                     'label' => 'Requests in a minute',
                     'backgroundColor' => 'rgb(255, 99, 132)',
-                 /*   'borderColor' => 'function(context) {
-                                        const chart = context.chart;
-                                        const {ctx, chartArea} = chart;
-
-                                        if (!chartArea) {
-                                            // This case happens on initial chart load
-                                            return;
-                                        }
-                        return getGradient(ctx, chartArea);
-                     },',//'rgb(255, 99, 132)',*/
                     'borderWidth' => 1,
                     'radius' => 0,
                     'data' => $chart2_data,
@@ -121,8 +118,13 @@ class HomeController extends AbstractController
         ]);
 
         $chart2->setOptions([
-            'scales'=>[
-                'x'=>[
+            'plugins'=>[
+                'legend'=>[
+                    'display' => false
+                ],
+            ],
+            'scales' => [
+                'x' => [
                     'ticks'=>[
                         'maxTicksLimit' => 24,
                         'maxRotation' => 50,
@@ -130,35 +132,45 @@ class HomeController extends AbstractController
                     ],
                 ]
             ],
-            'elements' =>[
-                'point' =>[
+            'elements' => [
+                'point' => [
                     'radius' => 0
                 ]
             ]
         ]);
 
+        /* SETUP 3RD CHART (Antwortcodes) */
+
         $chart3 = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chart3->setData([
-            'labels' => $chart3_labels, //['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            'labels' => $chart3_labels,
             'datasets' => [
                 [
                     'label' => 'Response Codes',
-                    'backgroundColor' => [ 'rgb(30, 200, 30)', 'rgb(40, 150, 40)', 'rgb(40, 100, 40)', 'rgb(255, 40, 40)' ,    'rgb(255, 80, 80)' ,  'rgb(255, 120, 120)', 'rgb(255, 150, 150)','rgb(255, 180, 180)' ],
-                    // 'backgroundColor' => 'rgb(255, 99, 132)',
-                    //'borderColor' => 'rgb(255, 99, 132)',
-                    'data' => $chart3_values //[0, 10, 5, 2, 20, 30, 45],
+                    'backgroundColor' => [
+                        'rgb(30, 200, 30)',
+                        'rgb(40, 150, 40)',
+                        'rgb(40, 100, 40)',
+                        'rgb(255, 40, 40)',
+                        'rgb(255, 80, 80)',
+                        'rgb(255, 120, 120)',
+                        'rgb(255, 150, 150)',
+                        'rgb(255, 180, 180)' ],
+                    'data' => $chart3_values
                 ],
             ],
         ]);
 
-        $chart3->setOptions([/*
+        $chart3->setOptions([
+
             'plugins'=>[
                 'legend'=>[
-                    'position'=>'left',
-                ]
-            ]
-        */]);
+                    'display' => false
+             ],
+        ]
+        ]);
 
+        /* SETUP 4TH CHART (Antwortgrösse) */
         $chart4 = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chart4->setData([
             'labels' => $chart4_labels,
@@ -172,7 +184,13 @@ class HomeController extends AbstractController
             ],
         ]);
 
-        $chart4->setOptions([/* ... */]);
+        $chart4->setOptions([
+            'plugins'=>[
+                'legend'=>[
+                    'display' => false
+                ],
+            ]
+        ]);
 
 
         return $this->render('home/index.html.twig', [

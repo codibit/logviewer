@@ -2,7 +2,6 @@
 namespace Deployer;
 
 require 'recipe/symfony.php';
-require 'contrib/webpack_encore.php';
 
 // Config
 
@@ -24,7 +23,12 @@ task('build', function () {
     cd('{{release_path}}');
     run('npm run build');
 });
+task('encore', function(){
+    cd('{{release_path}}');
+    run('yarn install');
+    run('yarn build');
+});
 
-after('deploy:update_code', 'npm:install');
+after('deploy:symlink', 'encore');
 
 after('deploy:failed', 'deploy:unlock');
