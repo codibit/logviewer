@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 use App\logfileProcessor;
+use App\Entity\Logfile;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,23 +19,26 @@ class LogfileController extends AbstractController
         ]);
     }
 
-    #[Route('/logfile/process', name: 'logfileProcess')]
-    public function process(logfileProcessor $logfileProcessor): Response
+    #[Route('/logfile/process/{id}', name: 'logfileProcess')]
+    public function process(Logfile $logfile, logfileProcessor $logfileProcessor): Response
     {
 
         try{
-            $logfileProcessor->process();
+            $logfileProcessor->process($logfile);
         } catch (Exception $e){
             echo 'Sorry, the following error happened while processing the file: ',  $e->getMessage(), "\n";
         }
 
-        return $this->render('logfile/processed.html.twig');
+        return $this->render('logfile/processed.html.twig',
+        [
+        'logfile' => $logfile
+        ]);
     }
 
-    #[Route('/logfile/epadata.json', name: 'jsonfile')]
-    public function jsonfile($filepath = false): Response
+    #[Route('/logfile/getJson/{id}', name: 'jsonfile')]
+    public function jsonfile(Logfile $logfile): Response
     {
-        $filepath =  '/doc/3.1 Candidate Assignment - Public Folder/epa-http.json';
+        $filepath =  '/var/storage/'.$logfile->getJson();
 
         return new Response(file_get_contents($this->getParameter('kernel.project_dir') . $filepath),
             Response::HTTP_OK,

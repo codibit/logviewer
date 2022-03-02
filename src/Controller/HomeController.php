@@ -14,12 +14,13 @@ class HomeController extends AbstractController
     #[Route('/', name: 'home')]
     public function index(ChartBuilderInterface $chartBuilder): Response
     {
-        $data = json_decode( file_get_contents($this->getParameter('kernel.project_dir') . '/doc/3.1 Candidate Assignment - Public Folder/epa-http.json'));
+        $jsonstring = json_decode( file_get_contents($this->getParameter('kernel.project_dir') . '/doc/3.1 Candidate Assignment - Public Folder/epa-http.json'));
 
         for ($i = 0; $i <= 9; $i++){
             $chart4_data[$i*100] = 0;
         }
-        foreach ($data as $logline){
+
+        foreach ($jsonstring as $logline){
 
             $datetime = /*''.$logline->datetime->day.' '.*/$logline->datetime->hour.':'.$logline->datetime->minute;
             if(!isset($chart2_data[$datetime])){
@@ -45,26 +46,20 @@ class HomeController extends AbstractController
             if(!isset($chart3_data[$logline->response_code])){
                 $chart3_data[$logline->response_code] = 0;
             }
-
             $chart3_data[$logline->response_code] ++;
 
             if($logline->response_code == 200 && $logline->document_size < 1000){
-
-
-
-                $chart4_data[floor($logline->document_size/100)*100]++;
+              $chart4_data[floor($logline->document_size/100)*100]++;
             }
-
-
         }
 
         foreach($chart1_data as $label => $value){
-            $chart1_labels[] = $label .' ('. ( round(($value/count($data)*100),2)). '%)';
+            $chart1_labels[] = $label .' ('. ( round(($value/count($jsonstring)*100),2)). '%)';
             $chart1_values[] = $value;
         }
 
         foreach($chart3_data as $label => $value){
-            $chart3_labels[] = $label .' ('. ( round(($value/count($data)*100),2)). '%)';
+            $chart3_labels[] = $label .' ('. ( round(($value/count($jsonstring)*100),2)). '%)';
             $chart3_values[] = $value;
         }
 
@@ -96,7 +91,7 @@ class HomeController extends AbstractController
 
 
         /* SETUP 2ND CHART (Requests pro Minute) */
-        foreach ($data as $logline){
+        foreach ($jsonstring as $logline){
             $datetime = /*'1995-08-'.$logline->datetime->day.' '.*/$logline->datetime->hour.':'.$logline->datetime->minute;
             if(!isset($chart2_data[$datetime])){
                 $chart2_data[$datetime] = 0;

@@ -4,36 +4,36 @@ namespace App;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
+use App\Entity\Logfile;
+use App\Entity\Httprequest;
 
 /*
  *
- * This Class will process the provided file in the documentation and create a json file from it.
+ * This Class will process the provided file and create a json file from it.
  *
  * */
 class logfileProcessor
 {
-    public $jsonFilePath = '../doc/3.1 Candidate Assignment - Public Folder/epadata.json';
+    private $jsonFilePath;
 
     private $jsonResource;
 
-    private int $line = 1;
+    private int $line = 0;
 
-    public function __construct(){
+    public function __destruct()
+    {
+        $this->closeJson();
+    }
 
+    private function openJson(){
         file_put_contents( $this->jsonFilePath, '');
 
         $this->jsonResource = fopen( $this->jsonFilePath, 'wb');
 
         fwrite($this->jsonResource, '[');
-
     }
 
-    public function __destruct()
-    {
-        $this->close();
-    }
-
-    public function close(): void
+    private function closeJson(): void
     {
 
         if (is_resource($this->jsonResource)) {
@@ -43,10 +43,12 @@ class logfileProcessor
         }
     }
 
-    public function addLine($lineData): void
+    private function addLine($lineData): void
     {
         if ($this->line !== 0) {
             fwrite($this->jsonResource, ',');
+        }else{
+            $this->openJson();
         }
 
         fwrite($this->jsonResource, json_encode($lineData));
@@ -54,53 +56,89 @@ class logfileProcessor
 
     }
 
-    public function process($filepath = '../doc/3.1 Candidate Assignment - Public Folder/epa-http.txt', ){
+    private function getLineData($logline){
+
+        preg_match('/(?<host>[^ ]*) \[(?<datetime_day>[\d]*)\:(?<datetime_hour>[\d]*):'.
+            '(?<datetime_minute>[\d]*):(?<datetime_second>[\d]*)[^"]*"(?<request>.*)"'.
+            ' (?<response_code>[\d]*) (?<document_size>[\d\-]*)/',
+            $logline,
+            $linedata);
+
+        return $linedata;
+    }
+
+    private function getRequestData($request){
+
+        preg_match('/\"(?<method>[A-Z]*)? ?(?<url>(?:(?! [A-Z]*\/[0-9.]*\"$|\"$).)*) ?(?<protocol>[A-Z]*)?\/?(?<protocol_version>[0-9.]*)?/',
+            $request, $requestdata);
+
+        return $requestdata;
+    }
+
+    private function verifyLineData($logline, $linedata){
+        $verify_line = $linedata['host']
+            . ' [' .$linedata['datetime_day']
+            . ':'.$linedata['datetime_hour']
+            . ':'.$linedata['datetime_minute']
+            . ':'.$linedata['datetime_second']
+            . '] "'.($linedata['request']['method']? $linedata['request']['method'].' ' : '')
+            . $linedata['request']['url']
+            . ($linedata['request']['protocol']? ' '.$linedata['request']['protocol'] : '')
+            . ($linedata['request']['protocol_version']? '/'.$linedata['request']['protocol_version'] : ''). '" '
+            . $linedata['response_code']
+            . ' '. $linedata['document_size'];
+
+        if(trim(str_replace($verify_line, '' , $logline)) === ''){
+            return $verify_line;
+        }else{
+            return false;
+        }
+    }
+    public function process(Logfile $logfile){
 
         $filesystem = new Filesystem();
 
+        $filepath = '../var/storage/'.$logfile->getFilename();
+
+        $this->jsonFilePath = '../var/storage/'.$logfile->getJson();;
 
         if($filesystem->exists($filepath)){
-            $logfile = fopen($filepath, "r");
-            if(is_resource($logfile)){
 
-                while (($logline = fgets($logfile)) !== false){
+            $file = fopen($filepath, "r");
+
+            if(is_resource($file)){
+
+
+
+                while (($logline = fgets($file)) !== false){
 
                     if(trim($logline) === ''){
                         continue;
                     }
 
                     /* Find basic items in the line */
-                    preg_match('/(?<host>[^ ]*) \[(?<datetime_day>[\d]*)\:(?<datetime_hour>[\d]*):'.
-                        '(?<datetime_minute>[\d]*):(?<datetime_second>[\d]*)[^"]*"(?<request>.*)"'.
-                        ' (?<response_code>[\d]*) (?<document_size>[\d\-]*)/',
-                        $logline,
-                        $linedata);
+                    $linedata = $this->getLineData();
 
-                    /* Extract request string */
-                    $request = substr($logline,strpos($logline, '"'),strrpos($logline, '"') - strpos($logline, '"') +1 );
+                    /* Extract request string and find request items */
 
-                    /* Find request items */
-                    preg_match('/\"(?<method>[A-Z]*)? ?(?<url>(?:(?! [A-Z]*\/[0-9.]*\"$|\"$).)*) ?(?<protocol>[A-Z]*)?\/?(?<protocol_version>[0-9.]*)?/',  $request, $linedata['request']);
+                    $linedata['request'] = $this->getRequestData(
+                        substr($logline,strpos($logline, '"'),
+                            strrpos($logline,
+                                '"') - strpos($logline, '"') +1 )
+                    );
+
+
 
 
                     /* Before proceeding, check if the data we processed matches the data we received 1:1
                        TODO: Take this into a function.
                     */
-
-                    $linedata['request']['method_verify'] = $linedata['request']['method']? $linedata['request']['method'].' ' : '';
-                    $linedata['request']['protocol_verify'] = $linedata['request']['protocol']? ' '.$linedata['request']['protocol'] : '';
-                    $linedata['request']['protocol_version_verify'] = $linedata['request']['protocol_version']? '/'.$linedata['request']['protocol_version'] : '';
-
-
-                    $verify_line = $linedata['host']
-                        .' [' .$linedata['datetime_day'].':'.$linedata['datetime_hour'].':'.$linedata['datetime_minute'].':'.$linedata['datetime_second'] . '] "'
-                        .$linedata['request']['method_verify']. $linedata['request']['url'] . $linedata['request']['protocol_verify'] . $linedata['request']['protocol_version_verify']. '" '
-                        . $linedata['response_code'] .' '. $linedata['document_size'];
-
-
-                    if(trim(str_replace($verify_line, '' , $logline)) !== ''){
-                        throw new \RuntimeException('INPUT AND OUTPUT LINES DO NOT MATCH.' . "\nInput Line: $logline\nProcessed line: $verify_line\n");
+                    try{
+                        $this->verifyLine($logline, $linedata);
+                    }  catch (Exception $e) {
+                        throw new \RuntimeException('Line processing failed.' . "\nInput Line: $logline\n");
                     }
+
 
                     /* add line to json file */
                     $this->addLine([

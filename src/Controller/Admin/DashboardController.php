@@ -8,6 +8,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use \App\Entity\Httprequest;
+use \App\Entity\Logfile;
 
 class DashboardController extends AbstractDashboardController
 {
@@ -27,7 +28,9 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkToCrud('Http Requests', 'fas fa-list', Httprequest::class);
+        //yield MenuItem::linkToCrud('Http Requests', 'fas fa-list', Httprequest::class);
+        yield MenuItem::linkToCrud('Logfiles', 'fas fa-list', Logfile::class);
+       // yield MenuItem::linkToCrud('Logfiles', 'fas fa-list', Logfile::class);
         yield MenuItem::linkToUrl('Public Stats', 'fas fa-globe', '/');
     }
 }
