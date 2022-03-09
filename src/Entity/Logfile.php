@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use App\logfileProcessor;
 use App\Repository\LogfileRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: LogfileRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[UniqueEntity('name')]
 class Logfile
 {
@@ -36,6 +38,21 @@ class Logfile
         $this->processed = $this->processed ?: false;
         $this->year = $this->year ?: 1995; // TODO: Make this into a  variable (Default year)
         $this->month = $this->month ?: 8; // TODO: Make this into a variable (Default month)
+    }
+
+    #[ORM\PrePersist]
+    public function prePersist($args)
+    {
+        $logfile = $args->getEntity();
+
+        $logfileProcessor = new logfileProcessor;
+
+        try{
+            $logfileProcessor->process($logfile);
+        } catch (Exception $e){
+            echo 'Sorry, the following error happened while processing the file: ',  $e->getMessage(), "\n";
+        }
+
     }
 
     public function getId(): ?int

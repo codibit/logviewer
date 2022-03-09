@@ -8,7 +8,7 @@ require 'recipe/symfony.php';
 set('repository', 'git@github.com:codibit/logviewer.git');
 
 add('shared_files', []);
-add('shared_dirs', []);
+add('shared_dirs', ['var/storage', 'var/log']);
 add('writable_dirs', []);
 
 // Hosts

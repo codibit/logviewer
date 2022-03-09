@@ -99,7 +99,6 @@ class logfileProcessor
         $filesystem = new Filesystem();
 
         $filepath = '../var/storage/'.$logfile->getFilename();
-
         $this->jsonFilePath = '../var/storage/'.$logfile->getJson();;
 
         if($filesystem->exists($filepath)){
@@ -108,8 +107,6 @@ class logfileProcessor
 
             if(is_resource($file)){
 
-
-
                 while (($logline = fgets($file)) !== false){
 
                     if(trim($logline) === ''){
@@ -117,7 +114,7 @@ class logfileProcessor
                     }
 
                     /* Find basic items in the line */
-                    $linedata = $this->getLineData();
+                    $linedata = $this->getLineData($logline);
 
                     /* Extract request string and find request items */
 
@@ -131,10 +128,10 @@ class logfileProcessor
 
 
                     /* Before proceeding, check if the data we processed matches the data we received 1:1
-                       TODO: Take this into a function.
+                    *   TODO: Take this into a function.
                     */
                     try{
-                        $this->verifyLine($logline, $linedata);
+                        $this->verifyLineData($logline, $linedata);
                     }  catch (Exception $e) {
                         throw new \RuntimeException('Line processing failed.' . "\nInput Line: $logline\n");
                     }
