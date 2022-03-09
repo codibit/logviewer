@@ -19,6 +19,12 @@ class LogfileCrudController extends AbstractCrudController
         return Logfile::class;
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->showEntityActionsInlined()
+            ;
+    }
 
     public function configureFields(string $pageName): iterable
     {
@@ -28,12 +34,25 @@ class LogfileCrudController extends AbstractCrudController
               ->setDisabled(),
             ImageField::new('filename')
                 ->setUploadDir('var/storage')
-                ->setUploadedFileNamePattern('[slug]-[contenthash].[extension]')
+                ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
                 ->onlyOnForms()->hideWhenUpdating(),
             BooleanField::new('processed')
                 ->setDisabled(),
         ];
 
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        $viewJson = Action::new('ViewJSON', 'Open Processed JSON')
+            ->linkToUrl(static function($ent){
+                return '/logfile/getJson/'.$ent->getId();
+            })->displayIf(static function($ent){
+                return $ent->getProcessed();
+            });
+
+        return $actions
+            ->add(CRUD::PAGE_INDEX, $viewJson);
     }
 
 

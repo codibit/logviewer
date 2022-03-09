@@ -48,10 +48,17 @@ class Logfile
         $logfileProcessor = new logfileProcessor;
 
         try{
-            $logfileProcessor->process($logfile);
+            if($logfile->getProcessed() === false){
+                $logfileProcessor->process($logfile);
+            }
+
         } catch (Exception $e){
             echo 'Sorry, the following error happened while processing the file: ',  $e->getMessage(), "\n";
         }
+
+        $logfile->setProcessed(true);
+        $em = $args->getEntityManager();
+        $em->flush();
 
     }
 
