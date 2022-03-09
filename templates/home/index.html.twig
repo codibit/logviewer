@@ -66,6 +66,17 @@
         </div>
 
     </div>
+    <div class="row">
+        {% for logfile in logfiles %}
+            {% if logfile.processed %}
+                <div class="col-12">
+                    <div class="card-body chart-container">
+                        Processed logfile {{ logfile.filename }}: <a href="/logfile/getJson/{{ logfile.id }}" target="_blank">{{ logfile.name }}</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 </div>
 
 {% endblock %}

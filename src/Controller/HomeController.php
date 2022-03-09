@@ -7,13 +7,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
-
+use App\Entity\Logfile;
+use Doctrine\ORM\EntityManagerInterface;
 
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'home')]
-    public function index(ChartBuilderInterface $chartBuilder): Response
+    public function index(ChartBuilderInterface $chartBuilder, EntityManagerInterface $entityManager): Response
     {
+        $repository = $entityManager->getRepository(Logfile::class);
+        $logfiles = $repository->findAll();
+
+        // Get the json from the documentation (I don't want the demo to fail if someone is touching the admin panel).
         $jsonstring = json_decode( file_get_contents($this->getParameter('kernel.project_dir') . '/doc/3.1 Candidate Assignment - Public Folder/epa-http.json'));
 
         for ($i = 0; $i <= 9; $i++){
@@ -193,6 +198,7 @@ class HomeController extends AbstractController
             'chart2' => $chart2,
             'chart3' => $chart3,
             'chart4' => $chart4,
+            'logfiles' => $logfiles
         ]);
 
     }
