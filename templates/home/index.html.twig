@@ -71,7 +71,7 @@
             {% if logfile.processed %}
                 <div class="col-12">
                     <div class="card-body chart-container">
-                        Processed logfile {{ logfile.filename }}: <a href="/logfile/getJson/{{ logfile.id }}" target="_blank">{{ logfile.name }}</a>
+                        Processed logfile {{ logfile.name }}: <a href="/logfile/getJson/{{ logfile.id }}" target="_blank">{{ logfile.filename }}</a>
                     </div>
                 </div>
             {% endif %}
